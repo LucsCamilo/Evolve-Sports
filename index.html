@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<title>Evolve Sports Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0A; --fg:#FFFFFF; --muted:rgba(255,255,255,.7);
+  --card:#1A1A1A; --line:#2A2A2A;
+  --display:'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+  --body:Montserrat, system-ui, -apple-system, sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:var(--body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{overflow:hidden}
+[hidden]{display:none!important}
+
+/* Telas */
+.screen{
+  position:fixed;inset:0;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:24px;
+  padding:calc(env(safe-area-inset-top,0px) + 40px) max(24px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 28px) max(24px,env(safe-area-inset-left,0px));
+  opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s linear .3s;
+}
+.screen.active{opacity:1;visibility:visible;transition:opacity .3s ease}
+.screen > *{width:100%;max-width:382px}
+.middle{margin-block:auto;display:flex;flex-direction:column;gap:16px}
+.actions{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+
+/* Logo */
+.logo{display:flex;justify-content:center}
+.logo img{width:min(78%,300px);height:auto;display:block}
+.logo.sm img{width:min(56%,210px)}
+.logo.missing img{display:none}
+.logo.missing::after{
+  content:'LOGO EVOLVE SPORTS';display:flex;align-items:center;justify-content:center;
+  height:48px;width:180px;border:1px dashed var(--muted);border-radius:8px;
+  font-size:11px;letter-spacing:.06em;color:var(--muted);
+}
+.logo.sm.missing::after{height:32px;width:140px;font-size:10px}
+
+/* Tipografia */
+h1,.big{font-family:var(--display);font-weight:400;text-transform:uppercase;margin:0;line-height:1;letter-spacing:.01em;text-wrap:balance}
+h1{font-size:clamp(40px,11.5vw,50px)}
+p{margin:0}
+.text{font-size:15px;line-height:1.5}
+.support{font-size:14px;line-height:1.5;color:var(--muted)}
+.small{font-size:12px;color:var(--muted)}
+
+/* Cartão */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.card .big{font-size:26px}
+.card div{font-size:13px;font-weight:500}
+
+/* Botões */
+.btn{
+  font:600 14px/1 var(--body);letter-spacing:.04em;text-transform:uppercase;
+  height:56px;width:100%;border-radius:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;color:var(--fg);border:1px solid var(--line);
+}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.link{border:0;height:44px;text-decoration:underline;text-underline-offset:4px}
+.btn:focus-visible,.icon-btn:focus-visible,.shutter:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.btn:active{opacity:.8}
+
+/* Câmera */
+.cam{padding:0;background:#000;gap:0}
+.cam > *{max-width:none}
+.cam video,.cam .preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cam video.mirror{transform:scaleX(-1)}
+.frame{position:absolute;left:0;right:0;bottom:0;height:45%;pointer-events:none;
+  background:linear-gradient(to top,rgba(10,10,10,.85),rgba(10,10,10,0))}
+.frame-block{position:absolute;left:0;right:0;bottom:max(13%,calc(env(safe-area-inset-bottom,0px) + 132px));display:flex;flex-direction:column;align-items:center;gap:8px}
+.frame-block .tag{font-size:13px;font-weight:500}
+.icon-btn{position:absolute;width:44px;height:44px;border-radius:50%;border:0;background:rgba(10,10,10,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.close{top:calc(env(safe-area-inset-top,0px) + 16px);left:calc(env(safe-area-inset-left,0px) + 16px)}
+.cam-controls{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);height:76px;display:flex;align-items:center;justify-content:center}
+.shutter{width:72px;height:72px;border-radius:50%;background:#FFFFFF;border:0;box-shadow:0 0 0 5px rgba(255,255,255,.35);cursor:pointer}
+.shutter:active{transform:scale(.94)}
+.flip{right:calc(env(safe-area-inset-right,0px) + 40px);top:16px;border:1px solid var(--muted)}
+.preview{position:absolute;inset:0;background:#000}
+.preview img{object-fit:contain}
+.preview .row{position:absolute;left:max(24px,env(safe-area-inset-left,0px));right:max(24px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 28px);display:flex;gap:12px}
+.preview .row .btn:not(.primary){background:rgba(10,10,10,.6);border-color:var(--muted)}
+.noperm{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:0 24px;background:var(--bg)}
+.noperm > *{width:100%;max-width:382px}
+
+/* Tela 4 */
+.final{height:60vh;height:60dvh;aspect-ratio:9/16;max-width:100%;width:auto!important;object-fit:cover;border-radius:12px;border:1px solid var(--line);align-self:center;flex-shrink:0}
+.s4 h1{font-size:clamp(32px,9vw,40px)}
+
+/* Tela 5 */
+.s5 .middle{gap:20px}
+.s5 .big{font-size:clamp(40px,11.5vw,48px)}
+.s5 h1{font-size:clamp(64px,19vw,80px)}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 100px);transform:translateX(-50%);
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;font-size:13px;max-width:calc(100% - 48px);z-index:20;text-align:center}
+
+@media (prefers-reduced-motion:reduce){.screen,.screen.active{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- Tela 1 – Boas-vindas -->
+<section id="s1" class="screen active" aria-label="Boas-vindas">
+  <div class="logo"><img src="logo-branca.png" alt="Evolve Sports" onerror="this.parentNode.classList.add('missing')"></div>
+  <h1>Bem-vindo(a) ao Evolve Sports Club</h1>
+  <p class="text">Estamos muito felizes em ter você com a gente. Esta caixa foi feita para quem vive cada movimento, e agora queremos viver o lançamento da Evolve Sports ao seu lado. Este é o seu convite.</p>
+  <div class="card">
+    <div class="big">Evento de lançamento</div>
+    <div>DATA E HORA: 6 DE MARÇO, ÀS 19H</div>
+    <div>LOCAL: ACADEMIA EVOLVE, 409 NORTE</div>
+    <div>DRESS CODE: EVOLVE SPORTS</div>
+  </div>
+  <div class="actions">
+    <button class="btn" id="cal" type="button">Adicionar ao calendário</button>
+    <button class="btn primary" type="button" data-go="s2">Continuar</button>
+  </div>
+</section>
+
+<!-- Tela 2 – Compartilhe o seu movimento -->
+<section id="s2" class="screen" aria-label="Compartilhe o seu movimento">
+  <div class="logo sm"><img src="logo-branca.png" alt="Evolve Sports" onerror="this.parentNode.classList.add('missing')"></div>
+  <div class="middle">
+    <h1>Compartilhe o seu movimento com a Evolve Sports</h1>
+    <p class="support">Tire uma foto com um look Evolve Sports no seu próximo movimento.</p>
+  </div>
+  <div class="actions" style="margin-top:0">
+    <button class="btn primary" id="openCam" type="button">Abrir câmera</button>
+    <button class="btn" type="button" data-go="s5">Pular</button>
+  </div>
+</section>
+
+<!-- Tela 3 – Foto -->
+<section id="s3" class="screen cam" aria-label="Foto">
+  <video id="video" playsinline muted autoplay></video>
+  <div class="frame" id="frame">
+    <div class="frame-block">
+      <div class="tag">#ParaTodoMovimento</div>
+      <div class="logo sm"><img src="logo-branca.png" alt="" onerror="this.parentNode.classList.add('missing')"></div>
+    </div>
+  </div>
+  <button class="icon-btn close" id="closeCam" type="button" aria-label="Voltar">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <div class="cam-controls" id="controls">
+    <button class="shutter" id="shutter" type="button" aria-label="Tirar foto"></button>
+    <button class="icon-btn flip" id="flip" type="button" aria-label="Alternar câmera">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3"/><path d="M4 4v4h4M20 20v-4h-4"/></svg>
+    </button>
+  </div>
+  <div class="preview" id="preview" hidden>
+    <img id="previewImg" alt="Prévia da foto com a moldura">
+    <div class="row">
+      <button class="btn" id="redo" type="button">Refazer</button>
+      <button class="btn primary" id="usePhoto" type="button">Usar esta foto</button>
+    </div>
+  </div>
+  <div class="noperm" id="noperm" hidden>
+    <p class="text">Precisamos da câmera para tirar a sua foto.</p>
+    <label class="btn primary" for="gallery">Escolher da galeria</label>
+    <input id="gallery" type="file" accept="image/*" hidden>
+  </div>
+</section>
+
+<!-- Tela 4 – Compartilhar -->
+<section id="s4" class="screen s4" aria-label="Compartilhar">
+  <div class="logo sm"><img src="logo-branca.png" alt="Evolve Sports" onerror="this.parentNode.classList.add('missing')"></div>
+  <h1>Esse é o seu movimento</h1>
+  <img class="final" id="finalImg" alt="Sua foto com a moldura Evolve Sports">
+  <div class="actions" style="margin-top:0">
+    <button class="btn primary" id="share" type="button">Compartilhar no Stories</button>
+    <button class="btn" id="copy" type="button">Copiar hashtag</button>
+    <p class="small">Cole a hashtag no seu Stories.</p>
+  </div>
+  <button class="btn link" type="button" data-go="s5">Pular</button>
+</section>
+
+<!-- Tela 5 – Até breve -->
+<section id="s5" class="screen s5" aria-label="Até breve">
+  <div class="logo sm"><img src="logo-branca.png" alt="Evolve Sports" onerror="this.parentNode.classList.add('missing')"></div>
+  <div class="middle">
+    <p class="big">Te esperamos em 6 de março, às 19h.</p>
+    <h1>Até breve!</h1>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const HASHTAG = '#ParaTodoMovimento @evolvesportsoficial';
+  const W = 1080, H = 1920, FRAME_BOTTOM = 250;
+
+  const video = $('#video');
+  let stream = null, facing = 'user', finalBlob = null, finalURL = null;
+
+  const logo = new Image(); let logoOk = false;
+  logo.onload = () => { logoOk = true; };
+  logo.src = 'logo-branca.png';
+
+  /* Navegação */
+  function go(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+    if (id !== 's3') stopCam();
+  }
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+
+  function toast(msg, ms){
+    const t = $('#toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, ms || 2500);
+  }
+
+  /* Tela 1 – calendário (.ics) */
+  $('#cal').addEventListener('click', () => {
+    const ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Evolve Sports//Evolve Sports Club//PT','BEGIN:VEVENT',
+      'UID:lancamento-evolve-sports-20270306@evolvesports',
+      'DTSTAMP:20261020T120000Z',
+      'DTSTART:20270306T220000Z',
+      'SUMMARY:Evento de lançamento Evolve Sports',
+      'LOCATION:Academia Evolve\\, 409 Norte',
+      'DESCRIPTION:Dress code: Evolve Sports',
+      'END:VEVENT','END:VCALENDAR'
+    ].join('\r\n');
+    download(new Blob([ics], {type:'text/calendar'}), 'evento-evolve-sports.ics');
+  });
+
+  function download(blob, name){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  /* Tela 3 – câmera */
+  function camUI(mode){
+    const live = mode === 'live';
+    video.hidden = !live; $('#frame').hidden = !live; $('#controls').hidden = !live;
+    $('#closeCam').hidden = mode === 'preview';
+    $('#preview').hidden = mode !== 'preview';
+    $('#noperm').hidden = mode !== 'noperm';
+  }
+  function stopCam(){
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null; video.srcObject = null;
+  }
+  async function startCam(){
+    stopCam(); camUI('live');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ camUI('noperm'); return; }
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:facing, width:{ideal:1920}, height:{ideal:1080} }, audio:false });
+      video.srcObject = stream;
+      video.classList.toggle('mirror', facing === 'user');
+      await video.play();
+    }catch(e){ camUI('noperm'); }
+  }
+
+  $('#openCam').addEventListener('click', () => { go('s3'); startCam(); });
+  $('#closeCam').addEventListener('click', () => go('s2'));
+  $('#flip').addEventListener('click', () => { facing = facing === 'user' ? 'environment' : 'user'; startCam(); });
+  $('#redo').addEventListener('click', () => { if (stream) camUI('live'); else startCam(); });
+
+  /* Moldura montada em código: 1080 x 1920 */
+  async function compose(src, sw, sh, mirror){
+    try{ await document.fonts.load('500 40px Montserrat'); }catch(e){}
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    x.fillStyle = '#0A0A0A'; x.fillRect(0, 0, W, H);
+
+    const k = Math.max(W / sw, H / sh), dw = sw * k, dh = sh * k;
+    x.save();
+    if (mirror){ x.translate(W, 0); x.scale(-1, 1); }
+    x.drawImage(src, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    x.restore();
+
+    const gh = 760, g = x.createLinearGradient(0, H, 0, H - gh);
+    g.addColorStop(0, 'rgba(10,10,10,0.85)'); g.addColorStop(1, 'rgba(10,10,10,0)');
+    x.fillStyle = g; x.fillRect(0, H - gh, W, gh);
+
+    let top = H - FRAME_BOTTOM;
+    if (logoOk){
+      let lw = 420, lh = lw * logo.naturalHeight / logo.naturalWidth;
+      if (lh > 140){ lh = 140; lw = lh * logo.naturalWidth / logo.naturalHeight; }
+      x.drawImage(logo, (W - lw) / 2, top - lh, lw, lh);
+      top -= lh;
+    }
+    x.fillStyle = '#FFFFFF'; x.textAlign = 'center';
+    x.font = '500 40px Montserrat, sans-serif';
+    x.fillText('#ParaTodoMovimento', W / 2, top - 28);
+
+    return new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+  }
+
+  function showPreview(blob){
+    finalBlob = blob;
+    if (finalURL) URL.revokeObjectURL(finalURL);
+    finalURL = URL.createObjectURL(blob);
+    $('#previewImg').src = finalURL;
+    camUI('preview');
+  }
+
+  $('#shutter').addEventListener('click', async () => {
+    if (!video.videoWidth) return;
+    showPreview(await compose(video, video.videoWidth, video.videoHeight, facing === 'user'));
+  });
+
+  $('#gallery').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const img = new Image(), url = URL.createObjectURL(f);
+    img.onload = async () => { showPreview(await compose(img, img.naturalWidth, img.naturalHeight, false)); URL.revokeObjectURL(url); };
+    img.src = url; e.target.value = '';
+  });
+
+  $('#usePhoto').addEventListener('click', () => { $('#finalImg').src = finalURL; go('s4'); });
+
+  /* Tela 4 – compartilhar */
+  $('#share').addEventListener('click', async () => {
+    if (!finalBlob) return;
+    const file = new File([finalBlob], 'evolve-sports.jpg', { type:'image/jpeg' });
+    if (navigator.canShare && navigator.canShare({ files:[file] })){
+      try{ await navigator.share({ files:[file] }); go('s5'); return; }
+      catch(e){ if (e && e.name === 'AbortError') return; }
+    }
+    download(finalBlob, 'evolve-sports.jpg');
+    toast('Foto salva. Abra o Instagram e poste nos Stories.', 3500);
+    setTimeout(() => go('s5'), 3500);
+  });
+
+  $('#copy').addEventListener('click', async () => {
+    try{ await navigator.clipboard.writeText(HASHTAG); }
+    catch(e){
+      const t = document.createElement('textarea'); t.value = HASHTAG; t.setAttribute('readonly', '');
+      t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t);
+      t.select(); try{ document.execCommand('copy'); }catch(_){} t.remove();
+    }
+    const b = $('#copy'); b.textContent = 'Copiado!';
+    setTimeout(() => { b.textContent = 'Copiar hashtag'; go('s5'); }, 2000);
+  });
+})();
+</script>
+</body>
+</html>
